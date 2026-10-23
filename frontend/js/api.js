@@ -438,6 +438,22 @@
     return e.length ? '?' + new URLSearchParams(e).toString() : '';
   };
 
+  /* Журналы отдают не больше 200 записей за запрос (п. 1.3 docs/API.md). Если экрану нужно больше
+     («Показать ещё»), догружаем страницами через offset; total_count и sum берём из первого ответа */
+  const PAGE_MAX = 200;
+  async function paged(path, q) {
+    const want = Number((q && q.limit) || 50);
+    if (want <= PAGE_MAX) return request('GET', path + qs(q));
+    const first = await request('GET', path + qs({ ...q, limit: PAGE_MAX, offset: 0 }));
+    const items = first.items.slice();
+    while (items.length < Math.min(want, first.total_count)) {
+      const next = await request('GET', path + qs({ ...q, limit: Math.min(PAGE_MAX, want - items.length), offset: items.length }));
+      if (!next.items.length) break;
+      items.push(...next.items);
+    }
+    return { ...first, items };
+  }
+
   /* Методы API — нумерация как в docs/API.md */
   window.API = {
     CONFIG, ApiError, token, resetMock,
@@ -455,12 +471,12 @@
     deleteCar: (id) => request('DELETE', `/cars/${enc(id)}`),                                    // 11
     records: (id, q) => request('GET', `/cars/${enc(id)}/records${qs(q)}`),                      // 12
     mileageRange: (id, q) => request('GET', `/cars/${enc(id)}/mileage-range${qs(q)}`),           // 13
-    repairs: (id, q) => request('GET', `/cars/${enc(id)}/repairs${qs(q)}`),                      // 14
+    repairs: (id, q) => paged(`/cars/${enc(id)}/repairs`, q),                                    // 14
     createRepair: (id, b) => request('POST', `/cars/${enc(id)}/repairs`, b),                     // 15
     repair: (id, rid) => request('GET', `/cars/${enc(id)}/repairs/${enc(rid)}`),                      // 16
     updateRepair: (id, rid, b) => request('PUT', `/cars/${enc(id)}/repairs/${enc(rid)}`, b),          // 17
     deleteRepair: (id, rid) => request('DELETE', `/cars/${enc(id)}/repairs/${enc(rid)}`),             // 18
-    refuels: (id, q) => request('GET', `/cars/${enc(id)}/refuels${qs(q)}`),                      // 19
+    refuels: (id, q) => paged(`/cars/${enc(id)}/refuels`, q),                                    // 19
     createRefuel: (id, b) => request('POST', `/cars/${enc(id)}/refuels`, b),                     // 20
     refuel: (id, rid) => request('GET', `/cars/${enc(id)}/refuels/${enc(rid)}`),                      // 21
     updateRefuel: (id, rid, b) => request('PUT', `/cars/${enc(id)}/refuels/${enc(rid)}`, b),          // 22

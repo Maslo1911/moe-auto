@@ -5,3 +5,8 @@ Thumbs.db
 ~$*.docx
 node_modules/
 .idea/
+.venv/
+.env
+backend/logs/
+backend/maintenance.on
+.pytest_cache/

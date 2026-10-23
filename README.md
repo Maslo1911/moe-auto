@@ -58,10 +58,11 @@
 
 | Слой | Стек |
 |------|------|
-| Backend | Python 3.11+ (FastAPI / Django) **или** Node.js 20+ (JS/TS) — _выбор уточняется_ |
-| Frontend | HTML5, CSS3, JavaScript (React или Vue) |
+| Backend | Python 3.12, FastAPI, SQLAlchemy 2, Alembic, Argon2 |
+| Frontend | HTML5, CSS3, JavaScript без библиотек |
 | БД | PostgreSQL 14+ |
 | Контроль версий | Git |
+| Развёртывание | Docker Compose, nginx |
 
 Используются только библиотеки со свободными лицензиями (MIT, Apache 2.0, BSD, PostgreSQL License).
 
@@ -142,54 +143,63 @@ erDiagram
 
 ## Быстрый старт
 
-> ⚠️ Раздел заполняется после выбора стека бэкенда.
-
 ### Требования
 
 - Git
-- PostgreSQL 14+
-- _Python 3.11+ или Node.js 20+_
+- Docker с Docker Compose — **или** Python 3.11+ и PostgreSQL 14+
 
-### Установка
+### Запуск в Docker (рекомендуется)
 
 ```bash
 git clone <URL_РЕПОЗИТОРИЯ>
-cd moeauto
-cp .env.example .env   # заполнить параметры подключения к БД и секрет для токенов
+cd moe-auto
+docker compose up -d --build
 ```
+
+Поднимаются PostgreSQL и бэкенд; при старте применяются миграции, заполняются справочники и демо-данные.
+Откройте http://localhost:8000 — демо-вход `ivan.petrov@mail.ru` / `qwerty123`.
+Документация API (Swagger): http://localhost:8000/api/v1/docs. Без демо-данных: `SEED_DEMO=0 docker compose up -d --build`.
+
+### Запуск без Docker
+
+```bash
+cd backend
+python -m venv .venv
+.venv\Scripts\activate          # Linux/macOS: source .venv/bin/activate
+pip install -r requirements-dev.txt
+cp .env.example .env            # заполнить параметры подключения к БД и секрет для токенов
+alembic upgrade head            # применение миграций
+python -m app.seed --demo       # заполнение справочников (+ демо-данные)
+uvicorn app.main:app --reload   # сервер и фронтенд на http://localhost:8000
+```
+
+Фронтенд сборки не требует: бэкенд отдаёт папку `frontend/` (переменная `FRONTEND_DIR`). Для выкладки — [`deploy/nginx.conf`](deploy/nginx.conf).
 
 ### Переменные окружения
 
 | Переменная | Описание |
 |------------|----------|
-| `DATABASE_URL` | Строка подключения к PostgreSQL |
+| `DATABASE_URL` | Строка подключения к PostgreSQL, `postgresql+psycopg://user:pass@host:5432/db` |
 | `SECRET_KEY` | Секрет для подписи токенов |
-| `TOKEN_TTL` | Срок действия токена |
-
-### Запуск
-
-```bash
-# backend
-<команда установки зависимостей>
-<команда применения миграций>
-<команда заполнения справочников>
-<команда запуска сервера>
-
-# frontend
-<команда установки зависимостей>
-<команда запуска dev-сервера>
-```
+| `TOKEN_TTL` | Срок действия токена, часов (по умолчанию 24) |
+| `APP_TIMEZONE` | Часовой пояс для проверки дат (по умолчанию `Europe/Moscow`) |
+| `CORS_ORIGINS` | Адреса сайта для CORS, если API на другом домене |
+| `FRONTEND_DIR` | Папка фронтенда, которую отдаёт бэкенд |
 
 После запуска проверка доступности: `GET /health`.
+
+Подробнее о бэкенде, схеме БД, сервисном режиме, роли администратора и резервном копировании — [`backend/README.md`](backend/README.md).
 
 ## Структура репозитория
 
 ```
 moeauto/
-├── backend/        # серверное приложение, REST API, миграции, сиды справочников
-├── frontend/       # веб-интерфейс
-├── docs/           # ТЗ, описание БД, ER-схема, макеты, список API, чек-лист БД
-├── .env.example
+├── backend/            # серверное приложение: REST API, миграции, сиды справочников, тесты
+├── frontend/           # веб-интерфейс
+├── docs/               # список API, макеты экранов, DDL схемы БД (docs/db/schema.sql)
+├── deploy/             # nginx.conf, скрипт резервного копирования
+├── mockups/            # макеты экранов (PNG)
+├── docker-compose.yml
 └── README.md
 ```
 
@@ -197,7 +207,7 @@ moeauto/
 
 REST API, обмен в JSON (UTF-8), только по HTTPS. Все методы, кроме регистрации и входа, требуют аутентификации.
 
-Полный перечень методов — в документе [`docs/api.md`](docs/api.md) («Список API»).
+Полный перечень методов — в документе [`docs/API.md`](docs/API.md) («Список API»).
 
 ## Безопасность
 
@@ -213,7 +223,7 @@ REST API, обмен в JSON (UTF-8), только по HTTPS. Все метод
 Проверка ведётся по чек-листу тестировщика: соответствие схемы БД ТЗ, наличие всех 9 функций в макетах и списке API, функциональные тесты прототипа.
 
 ```bash
-<команда запуска тестов>
+cd backend && pytest     # 31 функциональный тест API на отдельной БД bja_test
 ```
 
 Целевые показатели: отклик не более 2 с (итоги — не более 3 с), не менее 50 одновременных пользователей, до 10 000 записей на автомобиль.

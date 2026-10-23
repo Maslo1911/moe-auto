@@ -1,0 +1,41 @@
+# АС «БЖА»: PostgreSQL + бэкенд (FastAPI). Бэкенд также отдаёт фронтенд из папки frontend/,
+# поэтому после `docker compose up -d --build` всё открывается на http://localhost:8000
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bja
+      POSTGRES_USER: bja
+      POSTGRES_PASSWORD: bja
+      TZ: Europe/Moscow
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bja -d bja"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://bja:bja@db:5432/bja
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      TOKEN_TTL: ${TOKEN_TTL:-24}
+      APP_TIMEZONE: Europe/Moscow
+      FRONTEND_DIR: /frontend
+      SEED_DEMO: ${SEED_DEMO:-1}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./frontend:/frontend:ro
+
+volumes:
+  pgdata:

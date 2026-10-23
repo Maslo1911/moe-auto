@@ -1,0 +1,9 @@
+# Лицензии: FastAPI, Starlette, Pydantic, SQLAlchemy, Alembic, argon2-cffi — MIT;
+# uvicorn, python-dotenv, httpx — BSD; psycopg — LGPL-3.0 (свободная, допускает подключение как библиотеки)
+fastapi==0.162.0
+uvicorn[standard]==0.54.0
+SQLAlchemy==2.1.6
+alembic==1.20.1
+psycopg[binary]==3.3.6
+argon2-cffi==25.1.0
+python-dotenv==1.2.4
