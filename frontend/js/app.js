@@ -147,11 +147,12 @@
           <span class="title">${esc(car && state.cars.length > 1 ? (SECTIONS.find((x) => x[0] === section) || [, ''])[1] : (mobileTitle || (car ? carName(car) : 'Бортовой журнал')))}</span>
           ${carSelect}
           <a class="icon-btn" href="#/help" aria-label="Справка">${icon('help')}</a>
+          <button type="button" class="icon-btn" data-logout aria-label="Выйти" title="Выйти (${esc(state.user.email)})">${icon('logout')}</button>
         </div>
         <main class="main" id="main">${maintenanceBanner()}${content}</main>
         ${car ? `<nav class="tabbar" aria-label="Разделы">${SECTIONS.map(([k, t, ic, p]) => `<a href="#/cars/${car.id}${p}" ${section === k ? 'aria-current="page"' : ''}>${icon(ic)}${t}</a>`).join('')}</nav>` : ''}
       </div>`;
-    root.querySelector('[data-logout]').addEventListener('click', logout);
+    root.querySelectorAll('[data-logout]').forEach((b) => b.addEventListener('click', logout));
     const sel = root.querySelector('#m-car');
     if (sel) sel.addEventListener('change', () => go(`#/cars/${sel.value}${section && section !== 'card' ? '/' + section : ''}`));
     window.scrollTo(0, 0);

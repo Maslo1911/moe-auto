@@ -381,13 +381,13 @@ body.loading::before {
   .rail { display: none; }
   .main { padding: 16px 16px 32px; }
   .mobile-bar {
-    display: flex; align-items: center; gap: 10px; padding: 10px 12px 10px 16px; background: var(--asphalt); color: #fff;
+    display: flex; align-items: center; gap: 6px; padding: 10px 8px 10px 12px; background: var(--asphalt); color: #fff;
     position: sticky; top: 0; z-index: 20;
   }
   .mobile-bar .title { flex: 1; min-width: 0; font-weight: 700; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .mobile-bar .icon-btn { color: #dfe6ea; }
   .mobile-bar .icon-btn:hover { background: var(--asphalt-2); color: #fff; }
-  .mobile-bar select { background: var(--asphalt-2); color: #fff; border: 1px solid var(--asphalt-3); border-radius: var(--radius-s); min-height: 36px; padding: 0 8px; max-width: 160px; }
+  .mobile-bar select { background: var(--asphalt-2); color: #fff; border: 1px solid var(--asphalt-3); border-radius: var(--radius-s); min-height: 36px; padding: 0 8px; max-width: 120px; }
   .tabbar {
     display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
     background: var(--surface); border-top: 1px solid var(--line); padding: 4px 2px calc(4px + env(safe-area-inset-bottom));
