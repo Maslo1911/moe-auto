@@ -1,7 +1,0 @@
-.venv
-.env
-logs
-tests
-__pycache__
-.pytest_cache
-maintenance.on

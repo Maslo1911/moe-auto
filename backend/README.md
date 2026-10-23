@@ -17,6 +17,11 @@ docker compose up -d --build
 (`ivan.petrov@mail.ru` / `qwerty123`; отключить — `SEED_DEMO=0`). Сайт и API: http://localhost:8000,
 документация Swagger: http://localhost:8000/api/v1/docs, проверка: http://localhost:8000/health.
 
+Образ ([`Dockerfile`](Dockerfile)) собирается из корня репозитория и содержит и бэкенд, и фронтенд:
+`docker build -f backend/Dockerfile .`. При запуске он применяет миграции, заполняет справочники и стартует сервер
+на порту `PORT` (по умолчанию 8000) с `WEB_CONCURRENCY` процессами (по умолчанию 2). Этот же образ использует
+Render — см. [`render.yaml`](../render.yaml) и раздел «Деплой на Render + Neon» в [корневом README](../README.md).
+
 ### Вариант 2. Локально
 
 Нужны Python 3.11+ и PostgreSQL 14+ (можно только БД из Docker: `docker compose up -d db`).
@@ -42,9 +47,9 @@ cd backend
 pytest
 ```
 
-31 функциональный тест по всем функциям таблицы 1 ТЗ: регистрация и вход, доступ только к своим данным,
+35 тестов по всем функциям таблицы 1 ТЗ: регистрация и вход, доступ только к своим данным,
 лимит 10 автомобилей, каскадное удаление, расчёт суммы заправки, контроль пробега, поиск с суммой,
-итоги и средний расход, сервисный режим. Тесты создают отдельную БД `bja_test` (адрес — `TEST_DATABASE_URL`).
+итоги и средний расход, сервисный режим, разбор строки подключения от хостингов. Тесты создают отдельную БД `bja_test` (адрес — `TEST_DATABASE_URL`).
 
 ## Структура
 
@@ -101,7 +106,7 @@ backend/
 ## Переменные окружения
 
 См. [`.env.example`](.env.example): `DATABASE_URL`, `SECRET_KEY`, `TOKEN_TTL` (часы), `APP_TIMEZONE`,
-`CORS_ORIGINS`, `FRONTEND_DIR`, `LOG_DIR`, `MAINTENANCE_FILE`, `TEST_DATABASE_URL`.
+`CORS_ORIGINS`, `FRONTEND_DIR`, `LOG_DIR`, `MAINTENANCE_FILE`, `TEST_DATABASE_URL`; в Docker-образе ещё `PORT`, `WEB_CONCURRENCY`, `SEED_DEMO`.
 
 ## Лицензии зависимостей
 

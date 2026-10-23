@@ -1,0 +1,30 @@
+# Blueprint для Render (https://render.com/docs/blueprint-spec): бесплатный веб-сервис из backend/Dockerfile.
+# База данных — бесплатный PostgreSQL на Neon (https://neon.com); её адрес вводится при создании Blueprint.
+# Пошаговая инструкция — в README.md, раздел «Деплой на Render + Neon».
+services:
+  - type: web
+    name: moe-auto
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      # Строка подключения Neon (Connection string, без -pooler в адресе хоста). Render спросит её при создании
+      - key: DATABASE_URL
+        sync: false
+      # Секрет для токенов — Render сгенерирует случайное значение
+      - key: SECRET_KEY
+        generateValue: true
+      - key: TOKEN_TTL
+        value: "24"
+      - key: APP_TIMEZONE
+        value: Europe/Moscow
+      # 1 — создать демо-пользователя ivan.petrov@mail.ru / qwerty123 с данными; 0 — только справочники
+      - key: SEED_DEMO
+        value: "1"
+      # Бесплатный инстанс — 512 МБ памяти, одного процесса достаточно
+      - key: WEB_CONCURRENCY
+        value: "1"

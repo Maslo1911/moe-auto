@@ -1,0 +1,11 @@
+# Контекст сборки образа — корень репозитория (backend/Dockerfile). В образ нужны только backend/ и frontend/
+*
+!backend/
+!frontend/
+backend/.venv
+backend/.env
+backend/logs
+backend/tests
+backend/.pytest_cache
+backend/maintenance.on
+**/__pycache__
